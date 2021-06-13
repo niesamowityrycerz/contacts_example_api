@@ -12,8 +12,8 @@ class GenerateContacts
 
     results = []
     amount.times do |idx|
-      # added created_at
-      results.push(name: "#{prefix}_#{idx}", email: "#{prefix}_#{idx}".downcase + DEFAULT_DOMAIN_PART)#, created_at: Time.now, updated_at: Time.now)
+      # added created_at and updated_at for insert_all
+      results.push(name: "#{prefix}_#{idx}", email: "#{prefix}_#{idx}".downcase + DEFAULT_DOMAIN_PART, created_at: Time.now, updated_at: Time.now)
     end
     results
   end

@@ -30,34 +30,25 @@ class ContactsController < ApplicationController
   def mass_create
     contact_attrs = params[:contact_attrs] || GenerateContacts.new.call
 
-    #contacts = []
-#
-    ## ~30 sec.
-    #contact_attrs.each do |attrs|
-    #  contact = Contact.new(attrs)
-    #  contact.save!
-    #  contacts << {id: contact.id, name: contact.name, email: contact.email}
-    #end
-
-    ## REFACTORING vol.1 ~ 30 sec.
-    # contacts = Contact.create!(contact_attrs)
-
-    ## REFACTORING vol.2 ~30 sec.
-    Contact.transaction do 
-      @contacts = Contact.create!(contact_attrs)
+    # contacts = []
+    # old way
+    # it takes around  30 sec.
+    # contact_attrs.each do |attrs|
+    #   contact = Contact.new(attrs)
+    #   contact.save!
+    #   contacts << {id: contact.id, name: contact.name, email: contact.email}
+    # end
+    
+    begin
+      Contact.insert_all!(contact_attrs) 
+      contacts = Contact.last(contact_attrs.size)
+    rescue => e
+      error = { 
+        error: e.message
+      }
     end
 
-    ## REFACTORING vol.2 ~30 sec. -> it does not trigger ActiveRecord validations and callbacks, but restrictions on db level are not violated
-    # begin
-    #   Contact.insert_all!(contact_attrs)
-    #   contacts = Contact.last(10000)
-    # rescue => e
-    #   error = { 
-    #     error: e.message
-    #   }
-    # end
-
-    render json: @contacts || error, status: :created
+    render json: contacts || error, status: :created
   end
 
   # PATCH/PUT /contacts/1

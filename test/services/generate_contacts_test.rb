@@ -3,6 +3,7 @@ require 'test_helper'
 class GenerateContactsTest < ActiveSupport::TestCase
   test "#call" do
     result = GenerateContacts.new.call
+    p "Delta: #{now - time} seconds"
     assert_kind_of Array, result
     assert_equal 10_000, result.size
 
