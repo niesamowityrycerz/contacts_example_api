@@ -31,24 +31,29 @@ class ContactsController < ApplicationController
     contact_attrs = params[:contact_attrs] || GenerateContacts.new.call
 
     # contacts = []
-    # old way
-    # it takes around  30 sec.
+    # #old way
+    # #it takes around  30 sec.
     # contact_attrs.each do |attrs|
     #   contact = Contact.new(attrs)
     #   contact.save!
     #   contacts << {id: contact.id, name: contact.name, email: contact.email}
     # end
-    
-    begin
-      Contact.insert_all!(contact_attrs) 
-      contacts = Contact.last(contact_attrs.size)
-    rescue => e
-      error = { 
-        error: e.message
-      }
+
+    # ensure each contact hash has :created_at and :updated_at attribute
+    # so SQlite will not throw validation error; 
+    # there is "null: False" validation on db level 
+    contacts_attrs = contact_attrs.each do |contact|
+      if !contact.has_key? :created_at && :updated_at
+        contact.merge!({
+          created_at: Time.now,
+          updated_at: Time.now
+        })
+      end
     end
 
-    render json: contacts || error, status: :created
+    Contact.insert_all!(contact_attrs)
+    contacts = Contact.select(:id, :name, :email).last(contact_attrs.size)
+    render json: contacts, status: :created
   end
 
   # PATCH/PUT /contacts/1

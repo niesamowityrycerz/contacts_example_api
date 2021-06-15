@@ -48,6 +48,70 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
     assert_response 201
   end
 
+  test "#mass_create when email uniqueness violated" do 
+    params = [ 
+      {
+        name: 'test_1',
+        email: 'test@example.com',
+        created_at: Time.now,
+        updated_at: Time.now
+      },
+      {
+        name: 'test_2',
+        email: 'test@example.com',
+        created_at: Time.now,
+        updated_at: Time.now
+      }
+    ]
+    post mass_create_contacts_url, params: { contact_attrs: params }, as: :json
+
+    assert_equal "Email already in use!", response.parsed_body["error"]
+    assert_response 422
+  end
+
+  test "#mass_create when one contact has missing value" do 
+    params = [ 
+      {
+        name: 'test_1',
+        email: 'test_1@example.com',
+        created_at: Time.now,
+        updated_at: Time.now
+      },
+      {
+        email: 'test@example.com',
+        created_at: Time.now,
+        updated_at: Time.now
+      }
+    ]
+    post mass_create_contacts_url, params: { contact_attrs: params }, as: :json
+
+    assert_equal "At least one contact has missing value(s)!", response.parsed_body["error"]
+    assert_response 422
+  end
+
+  test "#mass_create when contacts do have name attribute" do 
+    params = [ 
+      {
+        email: 'test_1@example.com',
+        created_at: Time.now,
+        updated_at: Time.now
+      },
+      {
+        email: 'test_2@example.com',
+        created_at: Time.now,
+        updated_at: Time.now
+      }
+    ]
+    post mass_create_contacts_url, params: { contact_attrs: params }, as: :json
+
+    assert_equal "Name can't be blank!", response.parsed_body["error"]
+    assert_response 422
+  end
+
+
+
+
+
   test "#show" do
     get contact_url(@contact), as: :json
     assert_response :success

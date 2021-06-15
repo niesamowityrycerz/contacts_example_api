@@ -3,12 +3,11 @@ require 'test_helper'
 class GenerateContactsTest < ActiveSupport::TestCase
   test "#call" do
     result = GenerateContacts.new.call
-    p "Delta: #{now - time} seconds"
     assert_kind_of Array, result
     assert_equal 10_000, result.size
 
     first_result_element = result.first
-    assert_equal %i[name email], first_result_element.keys
+    assert_equal %i[name email created_at updated_at], first_result_element.keys
     assert first_result_element[:email].ends_with?('example.com')
   end
 
