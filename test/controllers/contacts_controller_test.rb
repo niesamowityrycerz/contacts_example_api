@@ -89,7 +89,7 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
     assert_response 422
   end
 
-  test "#mass_create when contacts do have name attribute" do 
+  test "#mass_create when contacts do not have name attribute" do 
     params = [ 
       {
         email: 'test_1@example.com',
@@ -106,6 +106,21 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal "Name can't be blank!", response.parsed_body["error"]
     assert_response 422
+  end
+
+  test "#mass_create when created_at and updated_at are not passed" do 
+    params = [ 
+      {
+        name: 'test_1',
+        email: 'test_1@example.com',
+      },
+      {
+        name: 'test_2',
+        email: 'test_2@example.com',
+      }
+    ]
+    post mass_create_contacts_url, params: { contact_attrs: params }, as: :json
+    assert_response 201
   end
 
 

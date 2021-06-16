@@ -2,6 +2,7 @@
 
 class ContactsController < ApplicationController
   before_action :set_contact, only: [:show, :update, :destroy]
+  before_action :adjust_contact_params, only: [:mass_create]
 
   # GET /contacts
   def index
@@ -39,18 +40,6 @@ class ContactsController < ApplicationController
     #   contacts << {id: contact.id, name: contact.name, email: contact.email}
     # end
 
-    # ensure each contact hash has :created_at and :updated_at attribute
-    # so SQlite will not throw validation error; 
-    # there is "null: False" validation on db level 
-    contacts_attrs = contact_attrs.each do |contact|
-      if !contact.has_key? :created_at && :updated_at
-        contact.merge!({
-          created_at: Time.now,
-          updated_at: Time.now
-        })
-      end
-    end
-
     Contact.insert_all!(contact_attrs)
     contacts = Contact.select(:id, :name, :email).last(contact_attrs.size)
     render json: contacts, status: :created
@@ -71,13 +60,37 @@ class ContactsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_contact
-      @contact = Contact.find(params[:id])
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_contact
+    @contact = Contact.find(params[:id])
+  end
 
-    # Only allow a trusted parameter "white list" through.
-    def contact_params
-      params.require(:contact).permit(:name, :email, addresses_attributes: [ :city, :street, :street_number ])
+  # Only allow a trusted parameter "white list" through.
+  def contact_params
+    params.require(:contact).permit(:name, :email, addresses_attributes: [ :city, :street, :street_number ])
+  end
+
+  def adjust_contact_params
+    # ensure each contact hash has :created_at and :updated_at attributes
+    # SQlite will not throw validation error
+    # there is "null: False" validation on db level 
+    if !params[:contact_attrs].nil?
+      params[:contact_attrs].each do |contact|
+        if !contact.has_key? :created_at && :updated_at 
+          contact.merge!({
+            created_at: Time.now,
+            updated_at: Time.now
+          })
+        elsif !contact.has_key? :updated_at
+          contact.merge!({
+            updated_at: Time.now
+          })
+        elsif !contact.has_key? :created_at
+          contact.merge!({
+            created_at: Time.now
+          })
+        end
+      end
     end
+  end
 end
