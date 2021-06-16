@@ -74,7 +74,6 @@ class ContactsController < ApplicationController
     # ensure each contact hash has :created_at and :updated_at attributes
     # SQlite will not throw validation error
     # there is "null: False" validation on db level
-    x = %i[created_at updated_at]
     if !params[:contact_attrs].nil?
       params[:contact_attrs].each do |contact|
         if !contact.has_key? :created_at && :updated_at 
