@@ -109,23 +109,16 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "#mass_create when created_at and updated_at are not passed" do 
-    params = [ 
-      {
-        name: 'test_1',
-        email: 'test_1@example.com',
-      },
-      {
-        name: 'test_2',
-        email: 'test_2@example.com',
+    params = []
+    10000.times do |i|
+      params << {
+        name: "test_#{i}",
+        email: "test_#{i}@example.com"
       }
-    ]
+    end
     post mass_create_contacts_url, params: { contact_attrs: params }, as: :json
     assert_response 201
   end
-
-
-
-
 
   test "#show" do
     get contact_url(@contact), as: :json

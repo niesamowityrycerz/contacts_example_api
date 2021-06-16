@@ -73,7 +73,8 @@ class ContactsController < ApplicationController
   def adjust_contact_params
     # ensure each contact hash has :created_at and :updated_at attributes
     # SQlite will not throw validation error
-    # there is "null: False" validation on db level 
+    # there is "null: False" validation on db level
+    x = %i[created_at updated_at]
     if !params[:contact_attrs].nil?
       params[:contact_attrs].each do |contact|
         if !contact.has_key? :created_at && :updated_at 
@@ -81,16 +82,8 @@ class ContactsController < ApplicationController
             created_at: Time.now,
             updated_at: Time.now
           })
-        elsif !contact.has_key? :updated_at
-          contact.merge!({
-            updated_at: Time.now
-          })
-        elsif !contact.has_key? :created_at
-          contact.merge!({
-            created_at: Time.now
-          })
         end
       end
-    end
+    end 
   end
 end
