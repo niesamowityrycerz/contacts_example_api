@@ -41,9 +41,7 @@ class ContactsController < ApplicationController
     #   contacts << {id: contact.id, name: contact.name, email: contact.email}
     # end
      
-
     Contact.insert_all!(contact_attrs)
-
     emails = contact_attrs.collect { |contact| contact[:email] }
     contacts = Contact.select(:id, :name, :email).where(email: emails)
 
