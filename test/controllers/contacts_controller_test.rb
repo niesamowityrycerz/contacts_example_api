@@ -84,12 +84,11 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
       }
     ]
     post mass_create_contacts_url, params: { contact_attrs: params }, as: :json
-
     assert_equal "At least one contact has missing value(s)!", response.parsed_body["error"]
     assert_response 422
   end
 
-  test "#mass_create when contacts do not have name attribute" do 
+  test "#mass_create when contacts do not have 'name' attribute" do 
     params = [ 
       {
         email: 'test_1@example.com',
@@ -104,9 +103,49 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
     ]
     post mass_create_contacts_url, params: { contact_attrs: params }, as: :json
 
-    assert_equal "Name can't be blank!", response.parsed_body["error"]
+    assert_equal "Name is missing!", response.parsed_body["error"]
     assert_response 422
   end
+
+  test "#mass_create when contacts do not have 'email' atribute" do 
+    params = [ 
+      {
+        name: 'test_1',
+        created_at: Time.now,
+        updated_at: Time.now
+      },
+      {
+        name: 'test_2',
+        created_at: Time.now,
+        updated_at: Time.now
+      }
+    ]
+    post mass_create_contacts_url, params: { contact_attrs: params }, as: :json
+
+    assert_equal "Email is missing!", response.parsed_body["error"]
+    assert_response 422
+  end
+
+  test "#mass_create when unkown argument is passed" do
+    unknown_attr = :alien
+    params = [ 
+      {
+        created_at: Time.now,
+        updated_at: Time.now
+      },
+      {
+        created_at: Time.now,
+        updated_at: Time.now
+      }
+    ]
+    params.collect { |contact| contact[unknown_attr] = "alien" }
+
+    post mass_create_contacts_url, params: { contact_attrs: params }, as: :json
+    
+    assert_equal "Unknown attribute '#{unknown_attr}' for contact.", response.parsed_body["error"]
+    assert_response 422
+  end
+
 
   test "#mass_create when created_at and updated_at are not passed" do 
     params = []
@@ -116,6 +155,7 @@ class ContactsControllerTest < ActionDispatch::IntegrationTest
         email: "test_#{i}@example.com"
       }
     end
+
     post mass_create_contacts_url, params: { contact_attrs: params }, as: :json
     assert_response 201
   end

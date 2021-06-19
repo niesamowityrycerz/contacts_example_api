@@ -31,17 +31,22 @@ class ContactsController < ApplicationController
   def mass_create
     contact_attrs = params[:contact_attrs] || GenerateContacts.new.call
 
+    # old way
     # contacts = []
-    # #old way
+    # 
     # #it takes around  30 sec.
     # contact_attrs.each do |attrs|
     #   contact = Contact.new(attrs)
     #   contact.save!
     #   contacts << {id: contact.id, name: contact.name, email: contact.email}
     # end
+     
 
     Contact.insert_all!(contact_attrs)
-    contacts = Contact.select(:id, :name, :email).last(contact_attrs.size)
+
+    emails = contact_attrs.collect { |contact| contact[:email] }
+    contacts = Contact.select(:id, :name, :email).where(email: emails)
+
     render json: contacts, status: :created
   end
 
@@ -71,15 +76,16 @@ class ContactsController < ApplicationController
   end
 
   def adjust_contact_params
-    # ensure each contact hash has :created_at and :updated_at attributes
-    # SQlite will not throw validation error
+    # ensure each contact hash has :created_at and :updated_at key:value pair
+    # SQlite will throw validation error because
     # there is "null: False" validation on db level
-    if !params[:contact_attrs].nil?
+    if params[:contact_attrs].is_a? Array
       params[:contact_attrs].each do |contact|
-        if !contact.has_key? :created_at && :updated_at 
+        unless contact.has_key? :created_at && :updated_at
+          now = Time.now  
           contact.merge!({
-            created_at: Time.now,
-            updated_at: Time.now
+            created_at: now,
+            updated_at: now
           })
         end
       end
